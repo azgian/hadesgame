@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { user } from '$lib';
-	import SignPage from '$lib/components/SignPage.svelte';
+	// import SignPage from '$lib/components/SignPage.svelte';
+	import SignForm from '$lib/components/SignForm.svelte';
 	import { goto } from '$app/navigation';
 
 	let isAuthenticated = false;
@@ -19,12 +20,7 @@
 	});
 </script>
 
-{#if !isAuthenticated}
-	<SignPage />
-{:else}
-	<!-- 로그인 후 표시할 내용 (선택적) -->
-	<p>로그인되었습니다. 리다이렉트 중...</p>
-{/if}
+<SignForm />
 
 <style>
 	/* 필요한 스타일 */

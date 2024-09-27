@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	// import { auth, db } from '$lib/firebase';
+	import { auth, db } from '$lib/firebase';
 	import { user } from '$lib';
-	// import {
-	// 	createUserWithEmailAndPassword,
-	// 	signInWithEmailAndPassword,
-	// 	onAuthStateChanged,
-	// 	signOut,
-	// 	type UserInfo
-	// } from 'firebase/auth';
-	// import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+	import {
+		createUserWithEmailAndPassword,
+		signInWithEmailAndPassword,
+		onAuthStateChanged,
+		signOut,
+		type UserInfo
+	} from 'firebase/auth';
+	import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 
 	let hours = '00';
 	let minutes = '00';
@@ -22,7 +22,8 @@
 	let error = '';
 	let message = '';
 	let showVerificationInput = false;
-	let isLoading = false; // 로딩 상태를 추적하는 새로운 변수
+	let isLoading = true; // 로딩 상태를 추적하는 새로운 변수
+	let isAuthenticated = false;
 
 	function getTime(u: string) {
 		const date = new Date();
@@ -54,121 +55,121 @@
 		const interval = setInterval(updateTime, 1000);
 		today = getToday();
 
-		// const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: UserInfo | null) => {
-		// 	if (firebaseUser) {
-		// 		user.set(firebaseUser);
-		// 		const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-		// 		if (userDoc.exists() && userDoc.data().level === 'unverified') {
-		// 			showVerificationInput = true;
-		// 		}
-		// 	} else {
-		// 		user.set(null);
-		// 		showVerificationInput = false;
-		// 	}
-		// });
+		const unsubscribe = onAuthStateChanged(auth, (firebaseUser: UserInfo | null) => {
+			if (firebaseUser) {
+				isAuthenticated = true;
+				user.set(firebaseUser);
+			} else {
+				isAuthenticated = false;
+				user.set(null);
+			}
+			isLoading = false;
+		});
 
 		return () => {
 			clearInterval(interval);
-			// unsubscribe();
+			unsubscribe();
 		};
 	});
 
-	// async function handleLogout() {
-	// 	try {
-	// 		await signOut(auth);
-	// 		console.log('로그아웃 성공');
-	// 	} catch (error) {
-	// 		console.error('로그아웃 실패:', error);
-	// 	}
-	// }
+	async function handleLogout() {
+		try {
+			await signOut(auth);
+			console.log('로그아웃 성공');
+		} catch (error) {
+			console.error('로그아웃 실패:', error);
+		}
+	}
 
-	// const handleSignUpOrIn = async () => {
-	// 	error = '';
-	// 	if (email && walletAddress) {
-	// 		isLoading = true; // 로딩 시작
-	// 		try {
-	// 			// 먼저 로그인 시도
-	// 			await signInWithEmailAndPassword(auth, email, walletAddress);
-	// 			message = '로그인 되었습니다.';
-	// 			error = '';
-	// 		} catch (loginError) {
-	// 			// 로그인 실패 시 회원가입 진행
-	// 			try {
-	// 				const userCredential = await createUserWithEmailAndPassword(auth, email, walletAddress);
-	// 				const newUser = userCredential.user;
+	const handleSignUpOrIn = async () => {
+		error = '';
+		if (email && walletAddress) {
+			isLoading = true; // 로딩 시작
+			try {
+				// 먼저 로그인 시도
+				await signInWithEmailAndPassword(auth, email, walletAddress);
+				message = '로그인 되었습니다.';
+				error = '';
+			} catch (loginError) {
+				// 로그인 실패 시 회원가입 진행
+				try {
+					const userCredential = await createUserWithEmailAndPassword(auth, email, walletAddress);
+					const newUser = userCredential.user;
 
-	// 				const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-	// 				await setDoc(doc(db, 'users', newUser.uid), {
-	// 					email: newUser.email,
-	// 					walletAddress: walletAddress,
-	// 					verificationCode: verificationCode,
-	// 					level: 'unverified',
-	// 					createdAt: new Date()
-	// 				});
+					const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+					await setDoc(doc(db, 'users', newUser.uid), {
+						email: newUser.email,
+						walletAddress: walletAddress,
+						verificationCode: verificationCode,
+						level: 'unverified',
+						createdAt: new Date()
+					});
 
-	// 				// 이메일 발송 API 호출
-	// 				await fetch('/api/sendVerificationEmail', {
-	// 					method: 'POST',
-	// 					headers: { 'Content-Type': 'application/json' },
-	// 					body: JSON.stringify({ email, verificationCode })
-	// 				});
+					// 이메일 발송 API 호출
+					await fetch('/api/sendVerificationEmail', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ email, verificationCode })
+					});
 
-	// 				showVerificationInput = true;
-	// 				message = '이메일로 전송된 인증 코드를 입력해주세요.';
-	// 			} catch (signupError) {
-	// 				console.error('회원가입 실패: ', signupError);
-	// 				if (signupError instanceof Error) {
-	// 					error = '회원정보 오류입니다.';
-	// 				} else {
-	// 					error = '알 수 없는 오류가 발생했습니다.';
-	// 				}
-	// 			}
-	// 		} finally {
-	// 			isLoading = false; // 로딩 종료
-	// 		}
-	// 	} else {
-	// 		error = '이메일과 지갑 주소를 모두 입력해주세요.';
-	// 	}
-	// };
+					showVerificationInput = true;
+					message = '이메일로 전송된 인증 코드를 입력해주세요.';
+				} catch (signupError) {
+					console.error('회원가입 실패: ', signupError);
+					if (signupError instanceof Error) {
+						error = '회원정보 오류입니다.';
+					} else {
+						error = '알 수 없는 오류가 발생했습니다.';
+					}
+				}
+			} finally {
+				isLoading = false; // 로딩 종료
+			}
+		} else {
+			error = '이메일과 지갑 주소를 모두 입력해주세요.';
+		}
+	};
 
-	// const verifyCode = async () => {
-	// 	if (!$user) return;
+	const verifyCode = async () => {
+		if (!$user) return;
 
-	// 	try {
-	// 		const userRef = doc(db, 'users', $user.uid);
-	// 		const userSnap = await getDoc(userRef);
+		try {
+			const userRef = doc(db, 'users', $user.uid);
+			const userSnap = await getDoc(userRef);
 
-	// 		if (userSnap.exists()) {
-	// 			const userData = userSnap.data();
-	// 			if (userData.verificationCode === verificationCode) {
-	// 				await updateDoc(userRef, {
-	// 					level: 'verified'
-	// 				});
-	// 				message = '회원가입이 완료되었습니다.';
-	// 				showVerificationInput = false;
-	// 			} else {
-	// 				error = '인증 코드가 올바르지 않습니다.';
-	// 			}
-	// 		} else {
-	// 			error = '사용자 정보를 찾을 수 없습니다.';
-	// 		}
-	// 	} catch (e) {
-	// 		console.error('인증 실패: ', e);
-	// 		if (e instanceof Error) {
-	// 			error = e.message;
-	// 		} else {
-	// 			error = '알 수 없는 오류가 발생했습니다.';
-	// 		}
-	// 	}
-	// };
+			if (userSnap.exists()) {
+				const userData = userSnap.data();
+				if (userData.verificationCode === verificationCode) {
+					await updateDoc(userRef, {
+						level: 'verified'
+					});
+					message = '회원가입이 완료되었습니다.';
+					showVerificationInput = false;
+				} else {
+					error = '인증 코드가 올바르지 않습니다.';
+				}
+			} else {
+				error = '사용자 정보를 찾을 수 없습니다.';
+			}
+		} catch (e) {
+			console.error('인증 실패: ', e);
+			if (e instanceof Error) {
+				error = e.message;
+			} else {
+				error = '알 수 없는 오류가 발생했습니다.';
+			}
+		}
+	};
 </script>
 
 <div class="email-form-container">
-	{#if $user && !showVerificationInput}
-		<!-- <p>환영합니다, {$user.email}!</p>
-		<button on:click={handleLogout}>로그아웃</button> -->
+	{#if isLoading}
+		<p>로딩 중...</p>
+	{:else if $user && !showVerificationInput}
+		<p>환영합니다, {$user.email}!</p>
+		<button on:click={handleLogout}>로그아웃</button>
 	{:else if showVerificationInput}
-		<!-- <form on:submit|preventDefault={verifyCode} class="email-form">
+		<form on:submit|preventDefault={verifyCode} class="email-form">
 			<input
 				type="text"
 				bind:value={verificationCode}
@@ -176,9 +177,9 @@
 				required
 			/>
 			<button type="submit">인증</button>
-		</form> -->
+		</form>
 	{:else}
-		<!-- <form on:submit|preventDefault={handleSignUpOrIn} class="email-form">
+		<form on:submit|preventDefault={handleSignUpOrIn} class="email-form">
 			<input type="email" bind:value={email} placeholder="이메일 주소를 입력하세요" required />
 			<input type="text" bind:value={walletAddress} placeholder="지갑주소를 입력하세요" required />
 			<button type="submit" disabled={isLoading}>
@@ -187,7 +188,7 @@
 				{/if}
 				Sign Up/In
 			</button>
-		</form> -->
+		</form>
 	{/if}
 	{#if error}
 		<p class="error">{error}</p>

@@ -1,0 +1,82 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* 가로 스크롤 제거 */
+    width: 100%;
+    height: 100%;
+    background-color: #2a2a2a;
+    color: #e0e0e0; /* 텍스트 색상을 밝게 변경 */
+}
+
+* {
+    box-sizing: border-box;
+}
+
+div:has(> :global(#svelte)) {
+    display: contents;
+}
+
+:root {
+    --primary-color: #ff7f00; /* 오렌지 계열 색상 */
+    --primary-color-dark: #cc6600; /* 조금 더 어두운 오렌지 */
+    --sidebar-color: #ffab40; /* 사이드바 색상 (밝은 오렌지) */
+    --text-color: #fcd29c;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    background-image: url('/images/underworld.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: right top;
+    opacity: 0.8;
+    z-index: 2; /* 스포트라이트 위로 올림 */
+}
+
+@-webkit-keyframes spotlight {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(50px, 50px);
+    }
+}
+
+@keyframes spotlight {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(50px, 50px);
+    }
+}
+
+/* 여명의 빛 효과 */
+body::after {
+    content: '';
+    position: fixed;
+    top: -10%;
+    left: -10%;
+    width: 120%; /* 크기를 약간 줄임 */
+    height: 120%; /* 크기를 약간 줄임 */
+    background: radial-gradient(
+        circle at top left,
+        rgba(46, 204, 113, 0.8) 0%, /* 중심부 에메랄드 색상 */
+        rgba(46, 204, 113, 0.6) 5%, 
+        rgba(46, 204, 113, 0.4) 10%,
+        rgba(46, 204, 113, 0.2) 20%,
+        rgba(46, 204, 113, 0.1) 30%,
+        rgba(46, 204, 113, 0) 40%
+    );
+    pointer-events: none;
+    z-index: 0;
+    -webkit-filter: blur(30px);
+            filter: blur(30px);
+    opacity: 0.8; /* 전체적인 불투명도 약간 증가 */
+}
+

@@ -1,13 +1,10 @@
 <script lang="ts">
 	import '../app.css';
-	import type { LayoutData } from './$types';
 	import { onMount } from 'svelte';
 	import { user } from '$lib'; // 사용자 상태 스토어
-	// import { auth } from '$lib/firebase';
-	// import { signOut } from 'firebase/auth'; // 로그아웃 함수
-	// import Toast from '$lib/components/Toast.svelte';
-
-	export let data: LayoutData;
+	import { auth } from '$lib/firebase';
+	import { signOut } from 'firebase/auth'; // 로그아웃 함수
+	import Toast from '$lib/components/Toast.svelte';
 
 	let showLogoutConfirm = false;
 
@@ -17,7 +14,7 @@
 
 	async function handleLogout() {
 		try {
-			// await signOut(auth);
+			await signOut(auth);
 			console.log('로그아웃 성공');
 			showLogoutConfirm = false;
 
@@ -48,15 +45,25 @@
 			spotlight.style.transform = `translate(${x}px, ${y}px)`;
 			requestAnimationFrame(animateSpotlight);
 		}
-
 		animateSpotlight();
+
+		const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+			if (firebaseUser) {
+				user.set(firebaseUser);
+			} else {
+				user.set(null);
+			}
+		});
+		return unsubscribe;
 	});
 </script>
 
 <div class="spotlight" bind:this={spotlight}></div>
 <div class="top-bar">
 	<div class="top-bar-container">
-		<img src="/images/hades-logo.png" alt="Hades Logo" class="logo" />
+		<a href={$user ? '/dashboard' : '/'}>
+			<img src="/images/hades-logo.png" alt="Hades Logo" class="logo" />
+		</a>
 		<div class="menu-items">
 			{#if $user}
 				<button class="logout-button" on:click={confirmLogout}>로그아웃</button>
@@ -66,12 +73,12 @@
 </div>
 <main>
 	<slot />
-	<!-- <Toast
+	<Toast
 		message="로그아웃 하시겠습니까?"
 		show={showLogoutConfirm}
 		onConfirm={handleLogout}
 		onCancel={cancelLogout}
-	/> -->
+	/>
 </main>
 
 <style>

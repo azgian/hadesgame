@@ -1,8 +1,18 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { user } from '$lib';
 	import LottoBalls from '$lib/components/LottoBalls.svelte';
-
-	// ... 나머지 코드 ...
+	import { getUserProfile, type UserProfile } from '$lib/firebase';
+	import { onMount } from 'svelte';
+	let profile: UserProfile | null = null;
+	onMount(async () => {
+		if ($user) {
+			profile = await getUserProfile($user.uid);
+		} else {
+			goto('/');
+		}
+		console.log(profile);
+	});
 </script>
 
 <div class="dashboard-content">

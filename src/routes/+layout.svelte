@@ -9,6 +9,7 @@
 	import { isUserAdmin } from '$lib/firebase';
 	import { fly } from 'svelte/transition';
 	import { toast } from '$lib/stores/toast';
+	import { goto } from '$app/navigation';
 
 	let isAdmin = false;
 	let showSidebar = false;
@@ -86,6 +87,11 @@
 			unsubscribe();
 		};
 	});
+
+	function navigateTo(path: string) {
+		showSidebar = false;
+		goto(path);
+	}
 </script>
 
 <div class="spotlight" bind:this={spotlight}></div>
@@ -105,6 +111,7 @@
 							href="/dashboard"
 							class="menu-link"
 							class:active={$page.url.pathname === '/dashboard'}
+							on:click|preventDefault={() => navigateTo('/dashboard')}
 						>
 							Dashboard
 						</a>
@@ -134,11 +141,21 @@
 	<div class="sidebar-overlay" on:click={toggleSidebar}></div>
 	<div class="sidebar" transition:fly={{ x: -250, duration: 300 }}>
 		{#if $user}
-			<a href="/dashboard" class="sidebar-link" class:active={$page.url.pathname === '/dashboard'}>
+			<a
+				href="/dashboard"
+				class="sidebar-link"
+				class:active={$page.url.pathname === '/dashboard'}
+				on:click|preventDefault={() => navigateTo('/dashboard')}
+			>
 				Dashboard
 			</a>
 			{#if isAdmin}
-				<a href="/adm" class="sidebar-link" class:active={$page.url.pathname.startsWith('/adm')}>
+				<a
+					href="/adm"
+					class="sidebar-link"
+					class:active={$page.url.pathname.startsWith('/adm')}
+					on:click|preventDefault={() => navigateTo('/adm')}
+				>
 					Admin
 				</a>
 			{/if}

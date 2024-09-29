@@ -88,9 +88,9 @@
 		};
 	});
 
-	function navigateTo(path: string) {
+	async function navigateTo(path: string) {
+		await goto(path);
 		showSidebar = false;
-		goto(path);
 	}
 </script>
 

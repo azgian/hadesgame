@@ -1,38 +1,37 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { user } from '$lib'; // 사용자 상태 스토어
-	import { page } from '$app/stores'; // 현재 페이지 정보를 위한 스토어
+	import { user } from '$lib';
+	import { page } from '$app/stores';
 	import { auth } from '$lib/firebase';
-	import { signOut } from 'firebase/auth'; // 로그아웃 함수
+	import { signOut } from 'firebase/auth';
 	import Toast from '$lib/components/Toast.svelte';
-	import { isUserAdmin } from '$lib/firebase'; // isUserAdmin 함수 import (경로 확인 필요)
+	import { isUserAdmin } from '$lib/firebase';
 	import { fly } from 'svelte/transition';
+	import { toast } from '$lib/stores/toast';
 
-	let showLogoutConfirm = false;
 	let isAdmin = false;
 	let showSidebar = false;
 	let isMobile = false;
-
-	function confirmLogout() {
-		showLogoutConfirm = true;
-	}
 
 	async function handleLogout() {
 		try {
 			await signOut(auth);
 			console.log('로그아웃 성공');
-			showLogoutConfirm = false;
+			toast.showToast('로그아웃되었습니다.', 'success', 3000, false);
 
 			// 강제로 페이지 이동
 			window.location.href = '/';
 		} catch (error) {
 			console.error('로그아웃 실패:', error);
+			toast.showToast('로그아웃에 실패했습니다.', 'error', 3000, false);
 		}
 	}
 
-	function cancelLogout() {
-		showLogoutConfirm = false;
+	function confirmLogout() {
+		toast.showToast('로그아웃 하시겠습니까?', 'info', null, true, handleLogout, () =>
+			toast.hideToast()
+		);
 	}
 
 	let spotlight: HTMLDivElement;
@@ -156,10 +155,12 @@
 		<slot />
 	{/if}
 	<Toast
-		message="로그아웃 하시겠습니까?"
-		show={showLogoutConfirm}
-		onConfirm={handleLogout}
-		onCancel={cancelLogout}
+		message={$toast.message}
+		show={$toast.show}
+		type={$toast.type}
+		showButtons={$toast.showButtons}
+		onConfirm={toast.handleConfirm}
+		onCancel={toast.handleCancel}
 	/>
 </main>
 

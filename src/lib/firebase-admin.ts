@@ -11,3 +11,13 @@ if (!getApps().length) {
 }
 
 export const auth = getAuth();
+
+export async function setAdminRole(uid: string, isAdmin: boolean) {
+  try {
+    await auth.setCustomUserClaims(uid, { admin: isAdmin });
+    console.log(`User ${uid} admin status set to ${isAdmin}`);
+  } catch (error) {
+    console.error('Error setting admin role:', error);
+    throw error;
+  }
+}

@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import {
     PUBLIC_FIREBASE_API_KEY,
     PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -38,4 +38,21 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     const docRef = doc(db, 'users', userId);
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? docSnap.data() as UserProfile : null;
+}
+
+export async function updateUserAdminStatus(userId: string, isAdmin: boolean) {
+    const userRef = doc(db, 'users', userId);
+    await setDoc(userRef, { isAdmin }, { merge: true });
+}
+
+export async function isUserAdmin(userId: string): Promise<boolean> {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    return userSnap.exists() && userSnap.data().isAdmin === true;
+}
+
+export async function getAllAdmins(): Promise<string[]> {
+    const adminsQuery = query(collection(db, 'users'), where('isAdmin', '==', true));
+    const querySnapshot = await getDocs(adminsQuery);
+    return querySnapshot.docs.map(doc => doc.id);
 }

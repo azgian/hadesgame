@@ -12,7 +12,7 @@
 	}
 
 	let balls: Ball[] = [];
-	const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'];
+	const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#FFD700', '#9370DB']; // 2개 색상 추가
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 	let containerWidth: number;
@@ -54,10 +54,10 @@
 	function initializeBalls() {
 		const baseBallRadius = 35;
 		const ballRadius = isMobile ? baseBallRadius * 0.6 : baseBallRadius; // 모바일에서는 60% 크기로 줄임
-		balls = Array(6)
+		balls = Array(8) // 볼 개수를 8개로 변경
 			.fill(null)
 			.map((_, i) => ({
-				number: Math.floor(Math.random() * 45) + 1,
+				number: Math.floor(Math.random() * 90000) + 10000, // 5자리 랜덤 숫자 생성
 				color: colors[i % colors.length],
 				x: Math.random() * (containerWidth - 2 * ballRadius) + ballRadius,
 				y: Math.random() * (containerHeight - 2 * ballRadius) + ballRadius,
@@ -76,7 +76,7 @@
 		ctx.closePath();
 
 		ctx.globalAlpha = 0.5; // 숫자의 투명도를 0.5로 설정
-		const fontSize = isMobile ? 18 : 24; // 모바일에서는 폰트 크기도 줄임
+		const fontSize = isMobile ? 14 : 18; // 폰트 크기를 조금 더 줄임
 		ctx.font = `bold ${fontSize}px Arial`;
 		ctx.fillStyle = 'white';
 		ctx.textAlign = 'center';

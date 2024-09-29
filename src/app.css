@@ -80,3 +80,16 @@ body::after {
     opacity: 0.8; /* 전체적인 불투명도 약간 증가 */
 }
 
+#content-title { /*h2*/
+    margin:10px;
+    padding-left:10px;
+    color:#666;
+    text-shadow: 1px 1px 1px #131212;
+    display:flex;
+    align-items: center;
+    gap: 10px;
+}
+.content-info {
+    padding: 15px;
+    color: #aaa;
+}

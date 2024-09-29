@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import type { UserProfile } from '$lib';  // UserProfile을 $lib에서 import
 import {
     PUBLIC_FIREBASE_API_KEY,
     PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -22,13 +23,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-
-// 사용자 프로필 인터페이스 정의
-export interface UserProfile {
-    email: string;
-    walletAddress?: string;
-    // 필요한 다른 필드들을 여기에 추가할 수 있습니다.
-}
 
 export async function createOrUpdateUserProfile(userId: string, data: Partial<UserProfile>) {
     await setDoc(doc(db, 'users', userId), data, { merge: true });

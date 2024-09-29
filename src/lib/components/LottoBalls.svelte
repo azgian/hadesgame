@@ -17,6 +17,11 @@
 	let ctx: CanvasRenderingContext2D;
 	let containerWidth: number;
 	let containerHeight: number;
+	let isMobile: boolean;
+
+	function checkMobile() {
+		isMobile = window.innerWidth <= 768; // 768px 이하를 모바일로 간주
+	}
 
 	function resizeCanvas() {
 		const container = canvas.parentElement;
@@ -26,6 +31,7 @@
 			canvas.width = containerWidth;
 			canvas.height = containerHeight;
 		}
+		checkMobile();
 	}
 
 	onMount(() => {
@@ -46,7 +52,8 @@
 	});
 
 	function initializeBalls() {
-		const ballRadius = 35; // 볼의 반지름을 3배로 증가 (15 * 3 = 45)
+		const baseBallRadius = 35;
+		const ballRadius = isMobile ? baseBallRadius * 0.6 : baseBallRadius; // 모바일에서는 60% 크기로 줄임
 		balls = Array(6)
 			.fill(null)
 			.map((_, i) => ({
@@ -69,7 +76,8 @@
 		ctx.closePath();
 
 		ctx.globalAlpha = 0.5; // 숫자의 투명도를 0.5로 설정
-		ctx.font = 'bold 24px Arial';
+		const fontSize = isMobile ? 18 : 24; // 모바일에서는 폰트 크기도 줄임
+		ctx.font = `bold ${fontSize}px Arial`;
 		ctx.fillStyle = 'white';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';

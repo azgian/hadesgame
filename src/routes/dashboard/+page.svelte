@@ -2,7 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { user } from '$lib';
 	import LottoBalls from '$lib/components/LottoBalls.svelte';
-	import { getUserProfile, type UserProfile } from '$lib/firebase';
+	import { getUserProfile } from '$lib/firebase';
+	import { type UserProfile } from '$lib';
 	import { onMount } from 'svelte';
 	let profile: UserProfile | null = null;
 	onMount(async () => {
@@ -18,10 +19,11 @@
 <div class="lottoBalls">
 	<LottoBalls />
 </div>
-<div class="title">
-	<h2>Dashboard</h2>
-	<small>({$user?.email})</small>
-</div>
+<h2 id="content-title">
+	<span class="material-icons">dashboard</span>
+	Dashboard
+</h2>
+<div class="content-info">여기는 내용</div>
 
 <style>
 	.lottoBalls {
@@ -31,15 +33,5 @@
 		width: 100%;
 		height: 150px;
 		z-index: -1;
-	}
-	.title {
-		padding: 0 25px;
-		color: white;
-		display: flex;
-		align-items: center;
-		gap: 15px;
-	}
-	h2 {
-		color: var(--primary-color);
 	}
 </style>

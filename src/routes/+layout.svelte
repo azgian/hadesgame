@@ -92,14 +92,12 @@
 <div class="spotlight" bind:this={spotlight}></div>
 <div class="top-bar">
 	<div class="top-bar-container">
-		{#if isMobile}
+		{#if isMobile && $user}
 			<button class="menu-button" on:click={toggleSidebar} aria-label="메뉴">
 				<span class="material-icons">menu</span>
 			</button>
 		{/if}
-		<a href={$user ? '/dashboard' : '/'}>
-			<img src="/images/hades-logo.png" alt="Hades Logo" class="logo" />
-		</a>
+		<img src="/images/hades-logo.png" alt="Hades Logo" class="logo" />
 		<div class="menu-container">
 			{#if !isMobile}
 				<div class="menu-items">
@@ -120,9 +118,12 @@
 				</div>
 			{/if}
 			{#if $user}
-				<button class="logout-button" on:click={confirmLogout} aria-label="로그아웃">
-					<span class="material-icons">logout</span>
-				</button>
+				<div class="button-box">
+					<small class="user-email">{$user.email}</small>
+					<button class="logout-button" on:click={confirmLogout} aria-label="로그아웃">
+						<span class="material-icons">logout</span>
+					</button>
+				</div>
 			{/if}
 		</div>
 	</div>
@@ -172,11 +173,11 @@
 		margin: 0 auto;
 	}
 	.contents {
-		background-color: rgba(50, 50, 50, 0.8); /* 반투명 흰색 배경 */
+		background-color: rgba(50, 50, 50, 0.8);
 		padding: 0;
 		border-radius: 10px;
 		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-		margin: 80px auto; /* 상단에서 100px 간격 */
+		margin: 80px auto;
 		width: 100%;
 		z-index: 100;
 		position: relative;
@@ -221,7 +222,6 @@
 		height: 100%;
 		margin: auto;
 		padding: 0 10px;
-		gap: 25px;
 	}
 
 	.logo {
@@ -235,6 +235,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		margin-left: 15px;
 	}
 
 	.menu-items {
@@ -242,7 +243,8 @@
 		gap: 10px;
 	}
 
-	.menu-link {
+	.menu-link,
+	.sidebar-link {
 		color: white;
 		text-decoration: none;
 		padding: 5px 10px;
@@ -250,7 +252,8 @@
 		transition: background-color 0.3s;
 	}
 
-	.menu-link:hover {
+	.menu-link:hover,
+	.sidebar-link:hover {
 		background-color: rgba(255, 255, 255, 0.1);
 	}
 
@@ -258,7 +261,19 @@
 		background-color: var(--primary-color);
 	}
 
-	.logout-button {
+	.sidebar-link.active {
+		background-color: rgba(255, 255, 255, 0.3);
+	}
+
+	.button-box {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.logout-button,
+	.menu-button {
 		background-color: transparent;
 		color: white;
 		border: none;
@@ -268,25 +283,20 @@
 		align-items: center;
 		justify-content: center;
 		transition: background-color 0.3s;
-		border-radius: 50%;
-		margin-left: auto;
 	}
 
-	.logout-button:hover {
+	.logout-button {
+		border-radius: 50%;
+	}
+
+	.logout-button:hover,
+	.menu-button:hover {
 		background-color: rgba(255, 255, 255, 0.1);
 	}
 
-	.logout-button .material-icons {
+	.logout-button .material-icons,
+	.menu-button .material-icons {
 		font-size: 24px;
-	}
-
-	.menu-button {
-		background: none;
-		border: none;
-		color: white;
-		font-size: 24px;
-		cursor: pointer;
-		padding: 5px;
 	}
 
 	.sidebar-overlay {
@@ -313,18 +323,25 @@
 	}
 
 	.sidebar-link {
-		color: white;
-		text-decoration: none;
 		text-align: center;
-		padding: 10px;
 		margin-bottom: 10px;
-		border-radius: 4px;
-		transition: background-color 0.3s;
 	}
 
-	.sidebar-link:hover,
-	.sidebar-link.active {
-		background-color: rgba(255, 255, 255, 0.3);
+	.user-email {
+		color: rgb(132, 149, 245);
+		max-width: 200px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	@media (max-width: 768px) {
+		.menu-items {
+			display: none;
+		}
+		.user-email {
+			max-width: 80px;
+		}
 	}
 
 	@media (max-width: 550px) {
@@ -341,12 +358,6 @@
 		.menu-items {
 			flex-direction: column;
 			align-items: flex-end;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.menu-items {
-			display: none;
 		}
 	}
 </style>

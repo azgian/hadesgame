@@ -4,7 +4,6 @@
 	import { user } from '$lib';
 	import TimeStamp from './TimeStamp.svelte';
 	import { goto } from '$app/navigation';
-	// import { isUserAdmin } from '$lib/firebase'; // 또는 정확한 경로
 
 	let email = '';
 	let verificationCode = '';
@@ -54,13 +53,6 @@
 			if (result.success) {
 				const userCredential = await signInWithCustomToken(auth, result.customToken);
 				user.set(userCredential.user);
-				// const isAdmin = await isUserAdmin(userCredential.user.uid);
-
-				// if (isAdmin) {
-				// 	goto('/adm');
-				// } else {
-				// 	goto('/dashboard');
-				// }
 				goto('/dashboard');
 
 				message = '로그인 성공!';

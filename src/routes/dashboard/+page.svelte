@@ -65,7 +65,9 @@
 				placeholder="지갑 주소를 입력하세요"
 				required
 			/>
-			<button type="submit">{buttonText}</button>
+			<div class="button-wrapper">
+				<button type="submit">{buttonText}</button>
+			</div>
 		</div>
 	</form>
 </div>
@@ -89,21 +91,27 @@
 
 	.input-group {
 		display: flex;
+		flex-direction: column;
 	}
 
 	.input-group input {
-		flex-grow: 1;
 		padding: 10px;
 		border: none;
-		border-radius: 4px 0 0 4px;
+		border-radius: 4px;
 		font-size: 16px;
-		background-color: rgba(100, 100, 100, 0.8); /* 어두운 배경색, 10% 불투명도 */
+		background-color: rgba(100, 100, 100, 0.8);
 		color: #eee;
 		text-align: center;
+		margin-bottom: 10px;
 	}
 
 	input::placeholder {
-		color: #999; /* 플레이스홀더 텍스트 색상 */
+		color: #999;
+	}
+
+	.button-wrapper {
+		display: flex;
+		justify-content: flex-end;
 	}
 
 	button {
@@ -111,7 +119,7 @@
 		background-color: var(--primary-color);
 		color: white;
 		border: none;
-		border-radius: 0 4px 4px 0;
+		border-radius: 4px;
 		font-size: 16px;
 		cursor: pointer;
 		transition: background-color 0.3s;
@@ -119,5 +127,25 @@
 
 	button:hover {
 		background-color: var(--primary-color-dark);
+	}
+
+	@media (min-width: 768px) {
+		.input-group {
+			flex-direction: row;
+		}
+
+		.input-group input {
+			flex-grow: 1;
+			margin-bottom: 0;
+			border-radius: 4px 0 0 4px;
+		}
+
+		.button-wrapper {
+			display: block;
+		}
+
+		button {
+			border-radius: 0 4px 4px 0;
+		}
 	}
 </style>

@@ -52,31 +52,39 @@
 	};
 
 	const generateRandomCoupons = () => {
-		resetInputs();
-		isLoading = Array(couponCount).fill(true);
+		toast.showToast(
+			'값을 작성하지 않은 칸에만<br>자동으로 쿠폰숫자가 생성됩니다.',
+			'info',
+			3000,
+			true,
+			() => {
+				const emptyIndices = couponInputs.reduce((acc: number[], input, index: number) => {
+					if (!input) acc.push(index);
+					return acc;
+				}, []);
 
-		setTimeout(() => {
-			const promises = couponInputs.map((_, index) => {
-				return new Promise<string>((resolve) => {
-					setTimeout(
-						() => {
-							const randomNumber = Math.floor(1 + Math.random() * 99999);
-							const numberString = randomNumber.toString();
-							couponInputs[index] = numberString;
-							couponInputs = [...couponInputs];
-							isLoading[index] = false;
-							isLoading = [...isLoading];
-							resolve(numberString);
-						},
-						Math.random() * 2000 + 1000
-					); // 1초에서 2초 사이의 랜덤한 시간
+				isLoading = Array(couponCount).fill(false);
+				emptyIndices.forEach((index) => {
+					isLoading[index] = true;
 				});
-			});
 
-			Promise.all(promises).then(() => {
-				// 모든 프로미스가 해결되면 여기서 추가 작업을 할 수 있습니다.
-			});
-		}, 100); // 약간의 지연을 주어 로딩 상태가 먼저 적용되도록 함
+				setTimeout(() => {
+					emptyIndices.forEach((index) => {
+						setTimeout(
+							() => {
+								const randomNumber = Math.floor(1 + Math.random() * 99999);
+								const numberString = randomNumber.toString().padStart(5, '0');
+								couponInputs[index] = numberString;
+								couponInputs = [...couponInputs];
+								isLoading[index] = false;
+								isLoading = [...isLoading];
+							},
+							Math.random() * 2000 + 1000
+						);
+					});
+				}, 100);
+			}
+		);
 	};
 
 	const resetInputs = () => {
@@ -118,7 +126,7 @@
 		</div>
 		<div class="button-group">
 			<button type="button" on:click={resetInputs}>초기화</button>
-			<button type="button" class="random" on:click={generateRandomCoupons}>쿠폰생성</button>
+			<button type="button" class="random" on:click={generateRandomCoupons}>자동생성</button>
 			<button type="submit" class="success">쿠폰발행</button>
 		</div>
 	</form>

@@ -17,17 +17,18 @@
 
 	const handleInput = (index: number, event: Event) => {
 		const input = event.target as HTMLInputElement;
-		let value = input.value.replace(/\D/g, '');
+		let value = input.value.replace(/^0+/, '').replace(/\D/g, ''); // 앞의 0과 숫자가 아닌 문자 제거
 		const numValue = parseInt(value, 10);
 
-		if (numValue < 1) {
-			value = '1';
-		} else if (numValue > 99999) {
+		if (numValue > 99999) {
 			value = '99999';
+		} else if (numValue < 1) {
+			value = '';
 		}
 
 		couponInputs[index] = value;
 		couponInputs = [...couponInputs];
+		input.value = value; // 입력 필드의 값을 직접 업데이트
 
 		if (value.length === 5 && index < couponCount - 1) {
 			const nextInput = document.getElementById(`coupon-input-${index + 1}`);
@@ -38,7 +39,11 @@
 	};
 
 	const handleSubmit = () => {
-		if (couponInputs.every((input) => input.length === 5)) {
+		if (
+			couponInputs.every(
+				(input) => input.length > 0 && input.length <= 5 && parseInt(input, 10) >= 1
+			)
+		) {
 			console.log('제출된 쿠폰:', couponInputs);
 			// 여기에 쿠폰 제출 로직을 추가하세요
 		} else {
@@ -93,17 +98,18 @@
 	</div>
 	<form on:submit|preventDefault={handleSubmit}>
 		<div class="coupon-inputs">
-			{#each couponInputs as _, index}
+			{#each couponInputs as couponInput, index}
 				<div class="input-wrapper">
 					{#if isLoading[index]}
 						<div class="loading-icon"></div>
 					{:else}
 						<input
-							type="number"
+							type="text"
+							inputmode="numeric"
 							id="coupon-input-{index}"
 							placeholder="1~99999"
 							maxlength="5"
-							bind:value={couponInputs[index]}
+							value={couponInput}
 							on:input={(e) => handleInput(index, e)}
 						/>
 					{/if}

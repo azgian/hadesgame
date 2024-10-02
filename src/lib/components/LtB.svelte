@@ -2,8 +2,7 @@
 	import { onMount } from 'svelte';
 
 	interface Ball {
-		number: string; // number를 string으로 변경
-		color: string;
+		number: number;
 		x: number;
 		y: number;
 		dx: number;
@@ -12,7 +11,6 @@
 	}
 
 	let balls: Ball[] = [];
-	const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#FFD700', '#9370DB']; // 2개 색상 추가
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 	let containerWidth: number;
@@ -20,17 +18,17 @@
 	let isMobile: boolean;
 
 	function checkMobile() {
-		isMobile = window.innerWidth <= 768; // 768px 이하를 모바일로 간주
+		isMobile = window.innerWidth <= 768;
 	}
 
 	function resizeCanvas() {
 		const container = canvas.parentElement;
 		if (container) {
 			containerWidth = container.clientWidth;
-			containerHeight = 200; // 고정 높이 설정
+			containerHeight = 200;
 			canvas.width = containerWidth;
 			canvas.height = containerHeight;
-			canvas.style.height = `${containerHeight}px`; // 캔버스 스타일 높이 설정
+			canvas.style.height = `${containerHeight}px`;
 		}
 		checkMobile();
 	}
@@ -40,10 +38,9 @@
 		resizeCanvas();
 		window.addEventListener('resize', () => {
 			resizeCanvas();
-			initializeBalls(); // 크기 변경 시 볼 재초기화
+			initializeBalls();
 		});
 
-		// 볼 초기화 및 애니메이션 시작
 		initializeBalls();
 		animate();
 
@@ -54,55 +51,26 @@
 
 	function initializeBalls() {
 		const baseBallRadius = 35;
-		const ballRadius = isMobile ? baseBallRadius * 0.6 : baseBallRadius; // 모바일에서는 60% 크기로 줄임
-		balls = Array(8) // 볼 개수를 8개로 유지
+		const ballRadius = isMobile ? baseBallRadius * 0.6 : baseBallRadius;
+		balls = Array(8)
 			.fill(null)
-			.map((_, i) => {
-				// 1에서 99999 사이의 랜덤 숫자 생성
-				const randomNumber = Math.floor(Math.random() * 99999) + 1;
-				// 숫자를 5자리 문자열로 변환 (9999 이하는 앞에 0을 채움)
-				const numberString = randomNumber.toString().padStart(5, '0');
-
-				return {
-					number: numberString,
-					color: colors[i % colors.length],
-					x: Math.random() * (containerWidth - 2 * ballRadius) + ballRadius,
-					y: Math.random() * (containerHeight - 2 * ballRadius) + ballRadius,
-					dx: (Math.random() - 0.5) * 2,
-					dy: (Math.random() - 0.5) * 2,
-					radius: ballRadius
-				};
-			});
-	}
-
-	function drawBall(ball: Ball) {
-		ctx.globalAlpha = 0.3; // 볼의 투명도를 0.3으로 설정 (0에서 1 사이의 값)
-		ctx.beginPath();
-		ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-		ctx.fillStyle = ball.color;
-		ctx.fill();
-		ctx.closePath();
-
-		ctx.globalAlpha = 0.5; // 숫자의 투명도를 0.5로 설정
-		const fontSize = isMobile ? 14 : 18; // 폰트 크기를 조금 더 줄임
-		ctx.font = `bold ${fontSize}px Arial`;
-		ctx.fillStyle = 'white';
-		ctx.textAlign = 'center';
-		ctx.textBaseline = 'middle';
-		ctx.fillText(ball.number, ball.x, ball.y);
-		ctx.globalAlpha = 1; // 투명도를 다시 1로 재설정
+			.map(() => ({
+				number: Math.floor(Math.random() * 90000) + 10000, // 5자리 랜덤 숫자 생성
+				x: Math.random() * (containerWidth - 2 * ballRadius) + ballRadius,
+				y: Math.random() * (containerHeight - 2 * ballRadius) + ballRadius,
+				dx: (Math.random() - 0.5) * 2,
+				dy: (Math.random() - 0.5) * 2,
+				radius: ballRadius
+			}));
 	}
 
 	function animate() {
 		ctx.clearRect(0, 0, containerWidth, containerHeight);
-		ctx.fillStyle = 'rgba(255, 255, 255, 0)'; // 배경에 약간의 흰색 투명도 추가
-		ctx.fillRect(0, 0, containerWidth, containerHeight);
 
 		balls.forEach((ball, index) => {
 			ball.x += ball.dx;
 			ball.y += ball.dy;
 
-			// 벽과의 충돌 처리
 			if (ball.x - ball.radius < 0 || ball.x + ball.radius > containerWidth) {
 				ball.dx *= -1;
 				ball.x = Math.max(ball.radius, Math.min(containerWidth - ball.radius, ball.x));
@@ -112,7 +80,6 @@
 				ball.y = Math.max(ball.radius, Math.min(containerHeight - ball.radius, ball.y));
 			}
 
-			// 다른 공들과의 충돌 처리
 			for (let i = index + 1; i < balls.length; i++) {
 				checkCollision(ball, balls[i]);
 			}
@@ -121,6 +88,42 @@
 		});
 
 		requestAnimationFrame(animate);
+	}
+
+	function drawBall(ball: Ball) {
+		const rainbowColors = [
+			'#ff0000',
+			'#ff7f00',
+			'#ffff00',
+			'#00ff00',
+			'#0000ff',
+			'#4b0082',
+			'#9400d3'
+		];
+		let color;
+
+		const ballIndex = balls.indexOf(ball);
+		if (ballIndex < 7) {
+			// 처음 7개의 공에 대해서는 무지개 색상 사용
+			color = rainbowColors[ballIndex];
+		} else {
+			// 8번째 공은 회색으로 설정
+			color = '#808080'; // 회색
+		}
+
+		ctx.globalAlpha = 0.5; // 볼의 투명도를 0.5로 설정
+		ctx.beginPath();
+		ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+		ctx.fillStyle = color;
+		ctx.fill();
+		ctx.closePath();
+
+		ctx.globalAlpha = 1; // 텍스트의 투명도는 1로 설정
+		ctx.font = `bold ${ball.radius * 0.5}px Arial`;
+		ctx.fillStyle = 'white';
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		ctx.fillText(ball.number.toString(), ball.x, ball.y);
 	}
 
 	function checkCollision(ball1: Ball, ball2: Ball): void {
@@ -165,8 +168,6 @@
 			ball2.y += separationY;
 		}
 	}
-
-	// ... 나머지 코드 ...
 </script>
 
 <div class="canvas-container">

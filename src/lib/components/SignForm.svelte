@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { auth } from '$lib/firebase';
 	import { signInWithCustomToken } from 'firebase/auth';
-	import { user } from '$lib';
 	import TimeStamp from './TimeStamp.svelte';
 	import { goto } from '$app/navigation';
+	import { user } from '$lib';
+	import type { UserData } from '$lib/types';
 
 	let email = '';
 	let verificationCode = '';
@@ -52,7 +53,15 @@
 
 			if (result.success) {
 				const userCredential = await signInWithCustomToken(auth, result.customToken);
-				user.set(userCredential.user);
+				// Firebase User 객체를 UserData로 변환
+				const userData: UserData = {
+					...userCredential.user,
+					createdAt: result.createdAt, // 서버에서 제공하는 경우
+					walletAddress: result.walletAddress || '', // 서버에서 제공하는 경우
+					isAdmin: result.isAdmin || false // 서버에서 제공하는 경우
+					// customField는 선택적이므로 생략 가능
+				};
+				user.set(userData);
 				goto('/dashboard');
 
 				message = '로그인 성공!';

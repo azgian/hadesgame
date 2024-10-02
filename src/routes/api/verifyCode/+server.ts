@@ -1,9 +1,9 @@
 import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 import { auth } from '$lib/firebase-admin';
-import { createOrUpdateUserProfile } from '$lib/firebase';
-import type { UserProfile } from '$lib';
-import { serverTimestamp } from 'firebase/firestore';
+import { createOrUpdateUserData } from '$lib/firebase';
+import type { UserData } from '$lib/types';
+import { serverTimestamp, Timestamp } from 'firebase/firestore';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const { email, verificationCode } = await request.json();
@@ -16,13 +16,12 @@ export const POST: RequestHandler = async ({ request }) => {
 			// 인증 성공
 			await auth.setCustomUserClaims(user.uid, { verificationCode: null });
 
-			const userProfile: Partial<UserProfile> = {
-				email: user.email,
-				createdAt: serverTimestamp(),  // serverTimestamp 사용
-				// walletAddress는 여기서 설정하지 않습니다. 사용자가 나중에 설정할 수 있도록 합니다.
+			const userData: Partial<UserData> = {
+				email: user.email ?? null,
+				createdAt: serverTimestamp() as unknown as Timestamp,
 			};
 
-			await createOrUpdateUserProfile(user.uid, userProfile);
+			await createOrUpdateUserData(user.uid, userData);
 
 			const customToken = await auth.createCustomToken(user.uid);
 

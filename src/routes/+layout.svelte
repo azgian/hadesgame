@@ -1,21 +1,22 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { user } from '$lib';
+	import { user, toggleState, checkMobile } from '$lib';
+	import type { UserData } from '$lib/types';
 	import { page } from '$app/stores';
-	import { auth } from '$lib/firebase';
+	import { auth, getUserData } from '$lib/firebase';
 	import { signOut } from 'firebase/auth';
 	import Toast from '$lib/components/Toast.svelte';
-	import { isUserAdmin } from '$lib/firebase';
 	import { fly } from 'svelte/transition';
 	import { toast } from '$lib/stores/toast';
 	import { goto } from '$app/navigation';
+	import { Timestamp } from 'firebase/firestore';
 
 	let isAdmin = false;
 	let showSidebar = false;
 	let isMobile = false;
 
-	async function handleLogout() {
+	const handleLogout = async () => {
 		try {
 			await signOut(auth);
 			console.log('로그아웃 성공');
@@ -27,36 +28,40 @@
 			console.error('로그아웃 실패:', error);
 			toast.showToast('로그아웃에 실패했습니다.', 'error', 3000, false);
 		}
-	}
+	};
 
-	function confirmLogout() {
+	const confirmLogout = () => {
 		toast.showToast('로그아웃 하시겠습니까?', 'info', null, true, handleLogout, () =>
 			toast.hideToast()
 		);
-	}
+	};
 
 	let spotlight: HTMLDivElement;
 
 	onMount(() => {
-		const checkMobile = () => {
-			isMobile = window.innerWidth <= 768;
+		const handleResize = () => {
+			isMobile = checkMobile();
 		};
-		checkMobile();
-		window.addEventListener('resize', checkMobile);
-		return () => window.removeEventListener('resize', checkMobile);
+
+		handleResize(); // 초기 실행
+		window.addEventListener('resize', handleResize);
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 
-	function toggleSidebar() {
-		showSidebar = !showSidebar;
-	}
+	const toggleSidebar = () => {
+		showSidebar = toggleState(showSidebar);
+	};
 
-	function animateSpotlight() {
+	const animateSpotlight = () => {
 		let x = window.innerWidth - 100;
 		let y = 0;
 		let dx = 0.95;
 		let dy = 0.75;
 
-		function animate() {
+		const animate = () => {
 			if (x > window.innerWidth || x < 400) dx = -dx;
 			if (y > 300 || y < -100) dy = -dy;
 			x += dx;
@@ -65,18 +70,38 @@
 				spotlight.style.transform = `translate(${x}px, ${y}px)`;
 			}
 			requestAnimationFrame(animate);
-		}
+		};
 
 		animate();
-	}
+	};
 
 	onMount(() => {
 		animateSpotlight();
 
 		const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
 			if (firebaseUser) {
-				user.set(firebaseUser);
-				isAdmin = await isUserAdmin(firebaseUser.uid);
+				try {
+					const fullUserData = await getUserData(firebaseUser.uid);
+					if (fullUserData) {
+						user.set(fullUserData);
+						isAdmin = fullUserData.isAdmin || false;
+					} else {
+						// User 타입의 필드들을 포함
+						const basicUserData: UserData = {
+							...firebaseUser, // User 타입의 모든 필드를 포함
+							createdAt: Timestamp.now(),
+							walletAddress: '',
+							isAdmin: false
+						};
+						user.set(basicUserData);
+						isAdmin = false;
+						// 필요하다면 여기서 새 사용자 데이터를 Firestore에 저장할 수 있습니다.
+					}
+				} catch (error) {
+					console.error('Error fetching user data:', error);
+					user.set(null);
+					isAdmin = false;
+				}
 			} else {
 				user.set(null);
 				isAdmin = false;
@@ -88,10 +113,10 @@
 		};
 	});
 
-	async function navigateTo(path: string) {
+	const navigateTo = async (path: string) => {
 		await goto(path);
 		showSidebar = false;
-	}
+	};
 </script>
 
 <div class="spotlight" bind:this={spotlight}></div>
@@ -110,7 +135,7 @@
 						<a
 							href="/dashboard"
 							class="menu-link"
-							class:active={$page.url.pathname === '/dashboard'}
+							class:active={$page.url.pathname.startsWith('/dashboard')}
 							on:click|preventDefault={() => navigateTo('/dashboard')}
 						>
 							Dashboard
@@ -191,10 +216,10 @@
 		margin: 0 auto;
 	}
 	.contents {
-		background-color: rgba(50, 50, 50, 0.8);
+		/* background-color: rgba(50, 50, 50, 0.8); */
 		padding: 0;
-		border-radius: 10px;
-		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		/* border-radius: 10px; */
+		/* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
 		margin: 80px auto;
 		width: 100%;
 		z-index: 100;
@@ -276,7 +301,8 @@
 	}
 
 	.menu-link.active {
-		background-color: var(--primary-color);
+		background-color: #666;
+		color: #000;
 	}
 
 	.sidebar-link.active {

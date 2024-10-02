@@ -17,7 +17,7 @@
 		out:fly={{ y: 50, duration: 300, easing: quintOut }}
 	>
 		<div class="toast" class:success={type === 'success'} class:error={type === 'error'}>
-			<p>{message}</p>
+			<p>{@html message}</p>
 			{#if showButtons}
 				<div class="buttons">
 					{#if onCancel}
@@ -46,9 +46,9 @@
 		background-color: #333;
 		color: #aaa;
 		padding: 15px;
-		border-radius: 5px;
+		border-radius: 10px;
 		box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-		max-width: 300px;
+		max-width: 320px;
 		width: 100%;
 	}
 	.toast.success {
@@ -77,8 +77,8 @@
 		transition: background-color 0.3s;
 	}
 	button.accept {
-		background-color: #4caf50;
-		color: white;
+		background-color: var(--primary-color);
+		color: var(--primary-text-color);
 	}
 	button.cancel {
 		background-color: #999;

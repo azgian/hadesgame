@@ -1,25 +1,23 @@
 <script lang="ts">
+	import type { PageData } from './$types';
+	import { user, formatDate } from '$lib';
 	import { goto } from '$app/navigation';
-	import { user } from '$lib';
 	import LottoBalls from '$lib/components/LottoBalls.svelte';
-	import { getUserProfile, createOrUpdateUserProfile } from '$lib/firebase';
-	import type { UserProfile } from '$lib';
+	import { getUserData, createOrUpdateUserData } from '$lib/firebase';
 	import { onMount } from 'svelte';
 	import { toast } from '$lib/stores/toast';
 
-	let profile: UserProfile | null = null;
 	let walletAddress = '';
 	let originalWalletAddress = '';
 
 	onMount(async () => {
 		if ($user) {
-			profile = await getUserProfile($user.uid);
-			walletAddress = profile?.walletAddress || '';
+			const userData = await getUserData($user.uid);
+			walletAddress = userData?.walletAddress || '';
 			originalWalletAddress = walletAddress;
 		} else {
 			goto('/');
 		}
-		console.log(profile);
 	});
 
 	async function handleSubmit() {
@@ -34,10 +32,8 @@
 		}
 
 		try {
-			await createOrUpdateUserProfile($user.uid, { walletAddress });
+			await createOrUpdateUserData($user.uid, { walletAddress });
 			toast.showToast('지갑 주소가 업데이트되었습니다.', 'success', 3000, false);
-			// 프로필 정보 갱신
-			profile = await getUserProfile($user.uid);
 			originalWalletAddress = walletAddress;
 		} catch (err) {
 			console.error('지갑 주소 업데이트 중 오류 발생:', err);
@@ -46,30 +42,62 @@
 	}
 
 	$: buttonText = originalWalletAddress ? '지갑주소 수정' : '지갑주소 등록';
+
+	export let data: PageData;
+
+	$: userCouponSet = $user ? data.couponSet.filter((coupon) => coupon.userId === $user.uid) : [];
 </script>
 
 <div class="lottoBalls">
 	<LottoBalls />
 </div>
-<h2 id="content-title">
-	<span class="material-icons">dashboard</span>
-	Dashboard
-</h2>
-<div class="content-info">
-	<form class="wallet-form" on:submit|preventDefault={handleSubmit}>
-		<div class="input-group">
-			<input
-				type="text"
-				id="wallet-address"
-				bind:value={walletAddress}
-				placeholder="지갑 주소를 입력하세요"
-				required
-			/>
-			<div class="button-wrapper">
-				<button type="submit">{buttonText}</button>
-			</div>
+
+<form class="wallet-form" on:submit|preventDefault={handleSubmit}>
+	<div class="input-group">
+		<input
+			type="text"
+			id="wallet-address"
+			bind:value={walletAddress}
+			placeholder="지갑 주소를 입력하세요"
+			required
+		/>
+		<div class="button-wrapper">
+			<button type="submit">{buttonText}</button>
 		</div>
-	</form>
+	</div>
+</form>
+
+<h3 class="title"><span class="material-icons">local_mall</span> 내 쿠폰 목록</h3>
+
+<div class="table-container">
+	<table class="table">
+		<thead>
+			<tr>
+				<th>쿠폰</th>
+				<th>날짜</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each userCouponSet as coupon}
+				<tr>
+					<td>
+						{#if coupon.isUsed}
+							발행되었습니다.
+							<!-- 발행후 쿠폰 출력 -->
+						{:else}
+							<button type="button" on:click={() => goto('/dashboard/coupon')}
+								>쿠폰발행하기 ({coupon.count}개)</button
+							>
+						{/if}
+					</td>
+					<td class="date">
+						{coupon.isUsed ? '추첨일' : '지급일'}:
+						{formatDate(coupon.createdAt, 'ymd')}
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 </div>
 
 <style>
@@ -84,7 +112,7 @@
 
 	.wallet-form {
 		max-width: 600px;
-		margin: 0 auto;
+		margin: 0 auto 30px;
 		border-radius: 8px;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
@@ -117,7 +145,7 @@
 	button {
 		padding: 10px 20px;
 		background-color: var(--primary-color);
-		color: white;
+		color: var(--primary-text-color);
 		border: none;
 		border-radius: 4px;
 		font-size: 16px;
@@ -147,5 +175,9 @@
 		button {
 			border-radius: 0 4px 4px 0;
 		}
+	}
+
+	td.date {
+		width: 180px;
 	}
 </style>

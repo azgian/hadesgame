@@ -18,9 +18,14 @@
 	const handleInput = (index: number, event: Event) => {
 		const input = event.target as HTMLInputElement;
 		let value = input.value.replace(/\D/g, '');
-		if (value.length > 5) {
-			value = value.slice(0, 5);
+		const numValue = parseInt(value, 10);
+
+		if (numValue < 1) {
+			value = '1';
+		} else if (numValue > 99999) {
+			value = '99999';
 		}
+
 		couponInputs[index] = value;
 		couponInputs = [...couponInputs];
 
@@ -37,7 +42,7 @@
 			console.log('제출된 쿠폰:', couponInputs);
 			// 여기에 쿠폰 제출 로직을 추가하세요
 		} else {
-			toast.showToast('모든 쿠폰 번호를<br>5자리로 입력해주세요.', 'error', 1500, false);
+			toast.showToast('모든 쿠폰번호를<br>1~99999로 입력하세요.', 'error', 3000, false);
 		}
 	};
 
@@ -51,15 +56,15 @@
 					setTimeout(
 						() => {
 							const randomNumber = Math.floor(1 + Math.random() * 99999);
-							const paddedNumber = randomNumber.toString().padStart(5, '0');
-							couponInputs[index] = paddedNumber;
+							const numberString = randomNumber.toString();
+							couponInputs[index] = numberString;
 							couponInputs = [...couponInputs];
 							isLoading[index] = false;
 							isLoading = [...isLoading];
-							resolve(paddedNumber);
+							resolve(numberString);
 						},
 						Math.random() * 2000 + 1000
-					); // 0.5초에서 1.5초 사이의 랜덤한 시간
+					); // 1초에서 2초 사이의 랜덤한 시간
 				});
 			});
 
@@ -94,9 +99,9 @@
 						<div class="loading-icon"></div>
 					{:else}
 						<input
-							type="text"
+							type="number"
 							id="coupon-input-{index}"
-							placeholder="5자리 숫자"
+							placeholder="1~99999"
 							maxlength="5"
 							bind:value={couponInputs[index]}
 							on:input={(e) => handleInput(index, e)}

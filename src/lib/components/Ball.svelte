@@ -33,27 +33,17 @@
 				<!-- 오각형 왼쪽 부분 (핑크) - 높이 20% 감소 -->
 				<path
 					fill="url(#pinkGradient)"
-					filter="url(#shadow)"
 					d="M12,3.4H7V9.144C7,9.432 7.18,9.704 7.47,9.856L11.34,11.44C11.75,11.656 12,11.656 12,11.44V3.4Z"
 				/>
 				<!-- 오각형 오른쪽 부분 (하늘색) - 높이 20% 감소 -->
 				<path
 					fill="url(#skyBlueGradient)"
-					filter="url(#shadow)"
 					d="M12,3.4H17V9.144C17,9.432 16.82,9.704 16.53,9.856L12.66,11.44C12.25,11.656 12,11.656 12,11.44V3.4Z"
 				/>
 				<line x1="12" y1="3.4" x2="12" y2="11.44" stroke="#FFF" stroke-width="0.25" />
 
 				<!-- 원형 부분 (메달) - 위치 조정 -->
-				<circle
-					cx="12"
-					cy="18"
-					r="4.5"
-					fill="#FFD700"
-					stroke="#DAA520"
-					stroke-width="0.5"
-					filter="url(#shadow)"
-				/>
+				<circle cx="12" cy="18" r="4.5" fill="#FFD700" stroke="#DAA520" stroke-width="0.5" />
 
 				<!-- 동심원 (장식) - 위치 조정 -->
 				<circle cx="12" cy="18" r="3.5" fill="none" stroke="#DAA520" stroke-width="0.3" />

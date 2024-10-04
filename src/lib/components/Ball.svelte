@@ -119,10 +119,6 @@
 		height: 80%;
 	}
 
-	.medal {
-		animation: shine 1.5s infinite;
-	}
-
 	@keyframes shine {
 		0%,
 		100% {

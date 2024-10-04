@@ -7,35 +7,24 @@
 
 	export let data: PageData;
 
-	let latestData: CouponSetData | null = null;
+	let latestCouponSetData: CouponSetData | null = null;
 
 	$: {
-		console.log('1. $user:', $user);
-		console.log('2. data.couponSet:', data.couponSet);
-
-		const filteredCoupons =
+		const filteredCouponSet =
 			$user && data.couponSet
 				? data.couponSet.filter((coupon: CouponSetData) => {
-						console.log('3. Filtering coupon:', coupon);
-						console.log('4. Comparing:', coupon.userId, $user.uid);
 						return coupon.userId === $user.uid;
 					})
 				: [];
-		console.log('5. filteredCoupons:', filteredCoupons);
-
-		const sortedCoupons = [...filteredCoupons].sort((a: CouponSetData, b: CouponSetData) => {
-			console.log('6. Sorting coupons:', a, b);
+		const sortedCouponSet = [...filteredCouponSet].sort((a: CouponSetData, b: CouponSetData) => {
 			const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
 			const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
 			return bTime - aTime;
 		});
-		console.log('7. sortedCoupons:', sortedCoupons);
-
-		latestData = sortedCoupons.length > 0 ? sortedCoupons[0] : null;
-		console.log('8. latestData:', latestData);
+		latestCouponSetData = sortedCouponSet.length > 0 ? sortedCouponSet[0] : null;
 	}
 </script>
 
 {#if $page.params.slug === 'coupon'}
-	<CouponPage {latestData} />
+	<CouponPage {latestCouponSetData} />
 {/if}

@@ -15,5 +15,21 @@ export interface CouponSetData
     userId: string;
     isUsed: boolean;
     count: number;
-    createdAt: Date | null;
+    createdAt: Timestamp;
+}
+
+export interface CouponsData
+{
+    id: string;
+    numbersData: NumbersData[];
+    couponSetId: string;
+    createdAt: Timestamp;
+    expiresAt: Timestamp;
+    userId: string;
+}
+
+export interface NumbersData
+{
+    number: number;
+    winningAmount: number;
 }

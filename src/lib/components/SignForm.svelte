@@ -83,6 +83,11 @@
 		showVerificationInput = false;
 		codePrefix = '';
 	}
+
+	function resetAuthentication() {
+		resetForm();
+		message = '';
+	}
 </script>
 
 <div class="email-form-container">
@@ -114,6 +119,14 @@
 			<p class="message" class:error={message.startsWith('Error:') || message.includes('실패')}>
 				{message}
 			</p>
+			{#if showVerificationInput}
+			<div class="reset-button-box">
+				<button type="button" on:click={resetAuthentication}>
+					인증 초기화
+				</button>
+				<small>인증과정을 처음부터 진행할수 있습니다.</small>
+			</div>
+			{/if}
 		{/if}
 	</form>
 	<TimeStamp />
@@ -238,5 +251,19 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+	}
+
+	.reset-button-box {
+		margin-top: 10px;
+		display: flex;
+		align-items: center;
+		gap:10px;
+	}
+	.reset-button-box > button {
+		font-size:0.8rem;
+		background-color: #ffffff;
+		border:none;
+		border-radius: 5px;
+		color:#666;
 	}
 </style>

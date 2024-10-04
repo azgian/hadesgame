@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import { db } from '$lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
-import type { UserData, CouponSetData } from '$lib/types';
+import type { UserData, CouponSetData, CouponsData } from '$lib/types';
 
 export const load: LayoutServerLoad = async () => {
     // 사용자 데이터 가져오기
@@ -19,11 +19,11 @@ export const load: LayoutServerLoad = async () => {
         })
         .filter(user => !user.isAdmin);
 
-    // 쿠폰 데이터 가져오기
-    const couponCollection = collection(db, 'couponSet');
-    const couponSnapshot = await getDocs(couponCollection);
+    // 쿠폰셋 데이터 가져오기
+    const couponSetCollection = collection(db, 'couponSet');
+    const couponSetSnapshot = await getDocs(couponSetCollection);
 
-    const couponSet = couponSnapshot.docs.map(doc => {
+    const couponSet = couponSetSnapshot.docs.map(doc => {
         const data = doc.data();
         return {
             id: doc.id,
@@ -34,8 +34,24 @@ export const load: LayoutServerLoad = async () => {
         } as CouponSetData;
     });
 
+    // 쿠폰 데이터 가져오기
+    const couponsCollection = collection(db, 'couponSet');
+    const couponsSnapshot = await getDocs(couponsCollection);
+
+    const coupons = couponsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            numbersData: data.numbersData,
+            userId: data.userId,
+            createdAt: data.createdAt && 'toDate' in data.createdAt ? data.createdAt.toDate() : null,
+            expiresAt: data.createdAt && 'toDate' in data.createdAt ? data.createdAt.toDate() : null
+        } as CouponsData;
+    });
+
     return {
         users,
-        couponSet
+        couponSet,
+        coupons
     };
 };

@@ -1,20 +1,24 @@
 import type { LayoutServerLoad } from './$types';
 import { db } from '$lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import type { UserData } from '$lib/types';
+import { collection, query, getDocs, limit, orderBy, startAfter } from 'firebase/firestore';
+import type { UserData, CouponSetData } from '$lib/types';
 
-// CouponData 타입을 정의합니다. 필요에 따라 수정하세요.
-interface CouponData {
-    id: string;
-    userId: string;
-    count: number;
-    createdAt: Date | null;
-}
+export const load: LayoutServerLoad = async ({ url }) => {
+    const defaultPageSize = 15;
+    const pageSize = parseInt(url.searchParams.get('limit') || defaultPageSize.toString(), 10);
+    const currentPage = parseInt(url.searchParams.get('page') || '1', 10);
+    const lastVisibleUser = url.searchParams.get('lastVisibleUser');
+    const lastVisibleCoupon = url.searchParams.get('lastVisibleCoupon');
 
-export const load: LayoutServerLoad = async () => {
     // 사용자 데이터 가져오기
     const usersCollection = collection(db, 'users');
-    const usersSnapshot = await getDocs(usersCollection);
+    let usersQuery = query(usersCollection, orderBy('createdAt', 'desc'), limit(pageSize));
+
+    if (lastVisibleUser) {
+        usersQuery = query(usersQuery, startAfter(new Date(lastVisibleUser)));
+    }
+
+    const usersSnapshot = await getDocs(usersQuery);
     
     const users = usersSnapshot.docs
         .map(doc => {
@@ -28,21 +32,38 @@ export const load: LayoutServerLoad = async () => {
         .filter(user => !user.isAdmin);
 
     // 쿠폰 데이터 가져오기
-    const couponCollection = collection(db, 'couponSet');
-    const couponSnapshot = await getDocs(couponCollection);
+    const couponSetCollection = collection(db, 'couponSet');
+    let couponSetQuery = query(couponSetCollection, orderBy('createdAt', 'desc'), limit(pageSize));
 
-    const couponSet = couponSnapshot.docs.map(doc => {
+    if (lastVisibleCoupon) {
+        couponSetQuery = query(couponSetQuery, startAfter(new Date(lastVisibleCoupon)));
+    }
+
+    const couponSetSnapshot = await getDocs(couponSetQuery);
+
+    const couponSet = couponSetSnapshot.docs.map(doc => {
         const data = doc.data();
         return {
             id: doc.id,
             userId: data.userId,
             count: data.count,
             createdAt: data.createdAt && 'toDate' in data.createdAt ? data.createdAt.toDate() : null
-        } as CouponData;
+        } as CouponSetData;
     });
+
+    const lastVisibleUserDoc = usersSnapshot.docs[usersSnapshot.docs.length - 1];
+    const lastVisibleCouponDoc = couponSetSnapshot.docs[couponSetSnapshot.docs.length - 1];
 
     return {
         users,
-        couponSet
+        couponSet,
+        pagination: {
+            currentPage,
+            pageSize,
+            lastVisibleUser: lastVisibleUserDoc ? lastVisibleUserDoc.data().createdAt.toDate().toISOString() : null,
+            lastVisibleCoupon: lastVisibleCouponDoc ? lastVisibleCouponDoc.data().createdAt.toDate().toISOString() : null,
+            hasMoreUsers: usersSnapshot.docs.length === pageSize,
+            hasMoreCoupons: couponSetSnapshot.docs.length === pageSize
+        }
     };
 };

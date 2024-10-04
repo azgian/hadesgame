@@ -4,8 +4,13 @@
 	import { goto } from '$app/navigation';
 	import LottoBalls from '$lib/components/LottoBalls.svelte';
 	import { getUserData, createOrUpdateUserData } from '$lib/firebase';
+	import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 	import { onMount } from 'svelte';
 	import { toast } from '$lib/stores/toast';
+	import type { CouponSetData, CouponsData } from '$lib/types';
+	import Balls from '$lib/components/Balls.svelte';
+
+	export let data: PageData;
 
 	let walletAddress = '';
 	let originalWalletAddress = '';
@@ -20,7 +25,7 @@
 		}
 	});
 
-	async function handleSubmit() {
+	const handleSubmit = async () => {
 		if (!$user) {
 			toast.showToast('사용자가 로그인되어 있지 않습니다.', 'error', 3000, false);
 			return;
@@ -39,13 +44,32 @@
 			console.error('지갑 주소 업데이트 중 오류 발생:', err);
 			toast.showToast('지갑 주소 업데이트에 실패했습니다.', 'error', 3000, false);
 		}
-	}
+	};
 
 	$: buttonText = originalWalletAddress ? '지갑주소 수정' : '지갑주소 등록';
 
-	export let data: PageData;
+	let userCouponSet: CouponSetData[] = [];
+	let issuedCoupons: { [key: string]: CouponsData | null } = {};
 
-	$: userCouponSet = $user ? data.couponSet.filter((coupon) => coupon.userId === $user.uid) : [];
+	$: if ($user && data.couponSet) {
+		userCouponSet = data.couponSet.filter((coupon) => coupon.userId === $user.uid);
+		loadIssuedCoupons();
+	}
+
+	async function loadIssuedCoupons() {
+		const db = getFirestore();
+		for (const coupon of userCouponSet) {
+			if (coupon.isUsed) {
+				const couponsRef = collection(db, 'coupons');
+				const q = query(couponsRef, where('couponSetId', '==', coupon.id));
+				const querySnapshot = await getDocs(q);
+				if (!querySnapshot.empty) {
+					issuedCoupons[coupon.id] = querySnapshot.docs[0].data() as CouponsData;
+				}
+			}
+		}
+		issuedCoupons = { ...issuedCoupons }; // 반응성을 위해 객체를 새로 할당
+	}
 </script>
 
 <div class="lottoBalls">
@@ -78,14 +102,21 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each userCouponSet as coupon}
+			{#each userCouponSet as coupon (coupon.id)}
 				<tr>
 					<td>
 						{#if coupon.isUsed}
-							발행되었습니다.
-							<!-- 발행후 쿠폰 출력 -->
+							{#if issuedCoupons[coupon.id]}
+								<div class="issued-coupons">
+									{#each issuedCoupons[coupon.id]?.numbersData ?? [] as numberData, index}
+										<Balls num={numberData.number} ballIndex={index} size={60} />
+									{/each}
+								</div>
+							{:else}
+								<p>쿠폰 정보를 불러오는 중...</p>
+							{/if}
 						{:else}
-							<button type="button" on:click={() => goto('/dashboard/coupon')}
+							<button type="button" on:click={()=>goto('/dashboard/coupon')}
 								>쿠폰발행하기 ({coupon.count}개)</button
 							>
 						{/if}
@@ -179,5 +210,13 @@
 
 	td.date {
 		width: 180px;
+	}
+
+	.issued-coupons {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 5px;
+		margin-top: 10px;
 	}
 </style>

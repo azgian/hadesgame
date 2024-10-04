@@ -125,7 +125,7 @@ h3.title {
     -webkit-overflow-scrolling: touch;
 }
 
-.table {
+.table-container > .table {
     width: 100%;
     border-collapse: collapse;
     min-width: 600px;

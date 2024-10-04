@@ -140,7 +140,7 @@
 		cursor: pointer;
 	}
 	.success {
-		background-color: #4caf50;
+		background-color: var(--primary-color);
 		color: white;
 	}
 </style>

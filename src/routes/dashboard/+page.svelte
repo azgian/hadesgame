@@ -93,18 +93,16 @@
 
 <h3 class="title"><span class="material-icons">local_mall</span> 내 쿠폰 목록</h3>
 
-<div class="table-container">
+<div class="table-container1">
 	<table class="table">
-		<thead>
-			<tr>
-				<th>쿠폰</th>
-				<th>날짜</th>
-			</tr>
-		</thead>
 		<tbody>
 			{#each userCouponSet as coupon (coupon.id)}
 				<tr>
 					<td>
+						<div class="date">
+							{coupon.isUsed ? '추첨일' : '지급일'}:
+							{formatDate(coupon.createdAt, 'ymd')}
+						</div>
 						{#if coupon.isUsed}
 							{#if issuedCoupons[coupon.id]}
 								<div class="issued-coupons">
@@ -116,14 +114,10 @@
 								<p>쿠폰 정보를 불러오는 중...</p>
 							{/if}
 						{:else}
-							<button type="button" on:click={()=>goto('/dashboard/coupon')}
+							<button type="button" on:click={() => goto('/dashboard/coupon')}
 								>쿠폰발행하기 ({coupon.count}개)</button
 							>
 						{/if}
-					</td>
-					<td class="date">
-						{coupon.isUsed ? '추첨일' : '지급일'}:
-						{formatDate(coupon.createdAt, 'ymd')}
 					</td>
 				</tr>
 			{/each}
@@ -208,8 +202,8 @@
 		}
 	}
 
-	td.date {
-		width: 180px;
+	.date {
+		text-align: center;
 	}
 
 	.issued-coupons {

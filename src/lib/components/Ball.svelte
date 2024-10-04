@@ -42,12 +42,12 @@
 				/>
 				<line x1="12" y1="3.4" x2="12" y2="11.44" stroke="#FFF" stroke-width="0.25" />
 
-				<!-- 원형 부분 (메달) - 위치 조정 -->
-				<circle cx="12" cy="18" r="4.5" fill="#FFD700" stroke="#DAA520" stroke-width="0.5" />
+				<!-- 원형 부분 (메달) - 위치 위로 조정 -->
+				<circle cx="12" cy="16.5" r="4.5" fill="#FFD700" stroke="#DAA520" stroke-width="0.5" />
 
-				<!-- 동심원 (장식) - 위치 조정 -->
-				<circle cx="12" cy="18" r="3.5" fill="none" stroke="#DAA520" stroke-width="0.3" />
-				<circle cx="12" cy="18" r="2.5" fill="none" stroke="#DAA520" stroke-width="0.3" />
+				<!-- 동심원 (장식) - 위치 위로 조정 -->
+				<circle cx="12" cy="16.5" r="3.5" fill="none" stroke="#DAA520" stroke-width="0.3" />
+				<circle cx="12" cy="16.5" r="2.5" fill="none" stroke="#DAA520" stroke-width="0.3" />
 			</svg>
 		</div>
 	{/if}

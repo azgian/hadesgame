@@ -12,18 +12,13 @@
 		<div class="win-label" style="font-size: {size * 0.5}px;">
 			<svg viewBox="0 0 24 24" width="100%" height="100%">
 				<defs>
-					<linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-						<stop offset="0%" style="stop-color:#FF3333;stop-opacity:1" />
-						<stop offset="100%" style="stop-color:#FF0000;stop-opacity:1" />
+					<linearGradient id="pinkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" style="stop-color:#FF69B4;stop-opacity:1" />
+						<stop offset="100%" style="stop-color:#FF1493;stop-opacity:1" />
 					</linearGradient>
-					<linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-						<stop offset="0%" style="stop-color:#3333FF;stop-opacity:1" />
-						<stop offset="100%" style="stop-color:#0000FF;stop-opacity:1" />
-					</linearGradient>
-					<linearGradient id="goldGradient" x1="100%" y1="0%" x2="0%" y2="100%">
-						<stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
-						<stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
-						<stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+					<linearGradient id="skyBlueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" style="stop-color:#00BFFF;stop-opacity:1" />
+						<stop offset="100%" style="stop-color:#1E90FF;stop-opacity:1" />
 					</linearGradient>
 					<filter id="shadow">
 						<feDropShadow
@@ -34,31 +29,16 @@
 							flood-opacity="0.6"
 						/>
 					</filter>
-					<filter id="innerShadow">
-						<feOffset dx="0" dy="1" />
-						<feGaussianBlur stdDeviation="0.5" result="offset-blur" />
-						<feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse" />
-						<feFlood flood-color="black" flood-opacity="0.75" result="color" />
-						<feComposite operator="in" in="color" in2="inverse" result="shadow" />
-						<feComposite operator="over" in="shadow" in2="SourceGraphic" />
-					</filter>
-					<filter id="shine">
-						<feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
-						<feComposite in="blur" in2="SourceGraphic" operator="over" />
-						<feComponentTransfer>
-							<feFuncA type="linear" slope="3" intercept="-1" />
-						</feComponentTransfer>
-					</filter>
 				</defs>
-				<!-- 오각형 왼쪽 부분 (빨강) -->
+				<!-- 오각형 왼쪽 부분 (핑크) -->
 				<path
-					fill="url(#redGradient)"
+					fill="url(#pinkGradient)"
 					filter="url(#shadow)"
 					d="M12,2H7V9.43C7,9.79 7.18,10.13 7.47,10.32L11.34,12.3C11.75,12.57 12,12.57 12,12.3V2Z"
 				/>
-				<!-- 오각형 오른쪽 부분 (파랑) -->
+				<!-- 오각형 오른쪽 부분 (하늘색) -->
 				<path
-					fill="url(#blueGradient)"
+					fill="url(#skyBlueGradient)"
 					filter="url(#shadow)"
 					d="M12,2H17V9.43C17,9.79 16.82,10.13 16.53,10.32L12.66,12.3C12.25,12.57 12,12.57 12,12.3V2Z"
 				/>
@@ -69,21 +49,15 @@
 					cx="12"
 					cy="19"
 					r="4.5"
-					fill="url(#goldGradient)"
+					fill="#FFD700"
+					stroke="#DAA520"
+					stroke-width="0.5"
 					filter="url(#shadow)"
-					class="medal"
 				/>
 
-				<!-- 동심원 (음각 효과) -->
-				<circle
-					cx="12"
-					cy="19"
-					r="3"
-					fill="none"
-					stroke="#B8860B"
-					stroke-width="0.5"
-					filter="url(#innerShadow)"
-				/>
+				<!-- 동심원 (장식) -->
+				<circle cx="12" cy="19" r="3.5" fill="none" stroke="#DAA520" stroke-width="0.3" />
+				<circle cx="12" cy="19" r="2.5" fill="none" stroke="#DAA520" stroke-width="0.3" />
 			</svg>
 		</div>
 	{/if}
@@ -117,16 +91,6 @@
 		right: -30%;
 		width: 80%;
 		height: 80%;
-	}
-
-	@keyframes shine {
-		0%,
-		100% {
-			filter: url(#shadow);
-		}
-		50% {
-			filter: url(#shine);
-		}
 	}
 
 	.ball0 {

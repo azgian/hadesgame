@@ -20,40 +20,21 @@
 						<stop offset="0%" style="stop-color:#00BFFF;stop-opacity:1" />
 						<stop offset="100%" style="stop-color:#1E90FF;stop-opacity:1" />
 					</linearGradient>
-					<filter id="shadow">
-						<feDropShadow
-							dx="1.5"
-							dy="2"
-							stdDeviation="0.5"
-							flood-color="#000000"
-							flood-opacity="0.6"
-						/>
-					</filter>
 				</defs>
 				<!-- 오각형 왼쪽 부분 (핑크) -->
 				<path
 					fill="url(#pinkGradient)"
-					filter="url(#shadow)"
 					d="M12,2H7V9.43C7,9.79 7.18,10.13 7.47,10.32L11.34,12.3C11.75,12.57 12,12.57 12,12.3V2Z"
 				/>
 				<!-- 오각형 오른쪽 부분 (하늘색) -->
 				<path
 					fill="url(#skyBlueGradient)"
-					filter="url(#shadow)"
 					d="M12,2H17V9.43C17,9.79 16.82,10.13 16.53,10.32L12.66,12.3C12.25,12.57 12,12.57 12,12.3V2Z"
 				/>
 				<line x1="12" y1="2" x2="12" y2="12.3" stroke="#FFF" stroke-width="0.25" />
 
 				<!-- 원형 부분 (메달) -->
-				<circle
-					cx="12"
-					cy="19"
-					r="4.5"
-					fill="#FFD700"
-					stroke="#DAA520"
-					stroke-width="0.5"
-					filter="url(#shadow)"
-				/>
+				<circle cx="12" cy="19" r="4.5" fill="#FFD700" stroke="#DAA520" stroke-width="0.5" />
 
 				<!-- 동심원 (장식) -->
 				<circle cx="12" cy="19" r="3.5" fill="none" stroke="#DAA520" stroke-width="0.3" />

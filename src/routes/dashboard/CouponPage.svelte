@@ -3,7 +3,19 @@
 	import { formatDate } from '$lib';
 	import { toast } from '$lib/stores/toast';
 	import { user } from '$lib'; // 사용자 정보를 저장하는 스토어라고 가정합니다
-	import { getFirestore, collection, addDoc, updateDoc, doc, Timestamp, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+	import {
+		getFirestore,
+		collection,
+		addDoc,
+		updateDoc,
+		doc,
+		Timestamp,
+		query,
+		where,
+		getDocs,
+		orderBy,
+		limit
+	} from 'firebase/firestore';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import Balls from '$lib/components/Balls.svelte';
@@ -30,7 +42,7 @@
 				const db = getFirestore();
 				const couponsRef = collection(db, 'coupons');
 				const q = query(
-					couponsRef, 
+					couponsRef,
 					where('couponSetId', '==', latestCouponSetData.id),
 					orderBy('createdAt', 'desc'),
 					limit(1)
@@ -80,13 +92,17 @@
 		} else {
 			toast.showToast('모든 쿠폰번호를<br>1~99999로 입력하세요.', 'error', 3000, false);
 		}
-	}
+	};
 
 	const handleSubmit = async () => {
-		if (couponInputs.every((input) => input.length > 0 && input.length <= 5 && parseInt(input, 10) >= 1)) {
+		if (
+			couponInputs.every(
+				(input) => input.length > 0 && input.length <= 5 && parseInt(input, 10) >= 1
+			)
+		) {
 			try {
 				const db = getFirestore();
-				const numbersData: NumbersData[] = couponInputs.map(input => ({
+				const numbersData: NumbersData[] = couponInputs.map((input) => ({
 					number: parseInt(input, 10),
 					winningAmount: 0 // 초기 당첨금액은 0으로 설정
 				}));
@@ -101,11 +117,34 @@
 
 				await addDoc(collection(db, 'coupons'), couponsData);
 				const couponSetRef = doc(db, 'couponSet', couponSetId);
-					await updateDoc(couponSetRef, {
+				await updateDoc(couponSetRef, {
 					isUsed: true
 				});
 				toast.showToast('쿠폰이 성공적으로 발행되었습니다.', 'success', 3000, false);
-				goto('/dashboard');
+				// goto('/dashboard');
+				// 쿠폰 발행 후 상태 업데이트
+				isUsedCoupon = true;
+
+				// 최근 발행된 쿠폰 데이터 가져오기
+				const latestCouponQuery = query(
+					collection(db, 'coupons'),
+					where('couponSetId', '==', couponSetId),
+					orderBy('createdAt', 'desc'),
+					limit(1)
+				);
+				const latestCouponSnapshot = await getDocs(latestCouponQuery);
+
+				if (!latestCouponSnapshot.empty) {
+					const latestCoupon = latestCouponSnapshot.docs[0].data() as CouponsData;
+					latestCouponSetData = {
+						...latestCouponSetData!,
+						isUsed: true
+					} as CouponSetData;
+					coupons = latestCoupon;
+				}
+
+				// 페이지 새로고침
+				goto('/dashboard/coupon', { replaceState: true });
 			} catch (error) {
 				console.error('쿠폰 발행 중 오류 발생:', error);
 				toast.showToast('쿠폰 발행 중 오류가 발생했습니다.', 'error', 3000, false);
@@ -170,14 +209,13 @@
 	</div>
 	{#if latestCouponSetData?.isUsed}
 		{#if coupons}
-			<div class="coupon-numbers">
-				<h4>최근 발행된 쿠폰:</h4>
-				<div class="balls-container">
-					{#each coupons.numbersData as numberData, index}
-						<Balls num={numberData.number} ballIndex={index} size={80} />
-					{/each}
-				</div>
-			</div>
+			<Balls
+				balls={coupons.numbersData.map((data) => data.number)}
+				isWinnerArray={coupons?.numbersData
+					.map((data) => data.winningAmount)
+					?.map((amount) => amount > 0)}
+				size={80}
+			/>
 		{:else if loadingError}
 			<p class="error-message">{loadingError}</p>
 		{:else}

@@ -2,12 +2,13 @@
 	import type { PageData } from './$types';
 	import { user, formatDate } from '$lib';
 	import { goto } from '$app/navigation';
-	import LottoBalls from '$lib/components/LottoBalls.svelte';
-	import { getUserData, createOrUpdateUserData } from '$lib/firebase';
-	import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+	// import LottoBalls from '$lib/components/LottoBalls.svelte';
+	import { db, getUserData, createOrUpdateUserData } from '$lib/firebase';
+	import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 	import { onMount } from 'svelte';
 	import { toast } from '$lib/stores/toast';
 	import type { CouponSetData, CouponsData } from '$lib/types';
+	import Ball from '$lib/components/Ball.svelte';
 	import Balls from '$lib/components/Balls.svelte';
 
 	export let data: PageData;
@@ -52,29 +53,36 @@
 	let issuedCoupons: { [key: string]: CouponsData | null } = {};
 
 	$: if ($user && data.couponSet) {
-		userCouponSet = data.couponSet.filter((coupon) => coupon.userId === $user.uid);
+		userCouponSet = data.couponSet
+			.filter((coupon) => coupon.userId === $user.uid)
+			.sort((a, b) => {
+				const dateA =
+					a.createdAt instanceof Timestamp ? a.createdAt.toDate() : new Date(a.createdAt);
+				const dateB =
+					b.createdAt instanceof Timestamp ? b.createdAt.toDate() : new Date(b.createdAt);
+				return dateB.getTime() - dateA.getTime();
+			});
 		loadIssuedCoupons();
 	}
 
-	async function loadIssuedCoupons() {
-		const db = getFirestore();
-		for (const coupon of userCouponSet) {
-			if (coupon.isUsed) {
+	const loadIssuedCoupons = async () => {
+		for (const couponSet of userCouponSet) {
+			if (couponSet.isUsed) {
 				const couponsRef = collection(db, 'coupons');
-				const q = query(couponsRef, where('couponSetId', '==', coupon.id));
+				const q = query(couponsRef, where('couponSetId', '==', couponSet.id));
 				const querySnapshot = await getDocs(q);
 				if (!querySnapshot.empty) {
-					issuedCoupons[coupon.id] = querySnapshot.docs[0].data() as CouponsData;
+					issuedCoupons[couponSet.id] = querySnapshot.docs[0].data() as CouponsData;
 				}
 			}
 		}
 		issuedCoupons = { ...issuedCoupons }; // 반응성을 위해 객체를 새로 할당
-	}
+	};
 </script>
 
-<div class="lottoBalls">
+<!-- <div class="lottoBalls">
 	<LottoBalls />
-</div>
+</div> -->
 
 <form class="wallet-form" on:submit|preventDefault={handleSubmit}>
 	<div class="input-group">
@@ -96,28 +104,29 @@
 <div class="table-container1">
 	<table class="table">
 		<tbody>
-			{#each userCouponSet as coupon (coupon.id)}
+			{#each userCouponSet as couponSet (couponSet.id)}
 				<tr>
 					<td>
-						<div class="date">
-							{coupon.isUsed ? '추첨일' : '지급일'}:
-							{formatDate(coupon.createdAt, 'ymd')}
-						</div>
-						{#if coupon.isUsed}
-							{#if issuedCoupons[coupon.id]}
-								<div class="issued-coupons">
-									{#each issuedCoupons[coupon.id]?.numbersData ?? [] as numberData, index}
-										<Balls num={numberData.number} ballIndex={index} size={60} />
-									{/each}
-								</div>
+						{#if couponSet.isUsed}
+							{#if issuedCoupons[couponSet.id]}
+								<Balls
+									balls={issuedCoupons[couponSet.id]?.numbersData.map((data) => data.number)}
+									isWinnerArray={issuedCoupons[couponSet.id]?.numbersData
+										.map((data) => data.winningAmount)
+										?.map((amount) => amount > 0)}
+								/>
 							{:else}
 								<p>쿠폰 정보를 불러오는 중...</p>
 							{/if}
 						{:else}
 							<button type="button" on:click={() => goto('/dashboard/coupon')}
-								>쿠폰발행하기 ({coupon.count}개)</button
+								>쿠폰발행하기 ({couponSet.count}개)</button
 							>
 						{/if}
+						<div class="date">
+							{couponSet.isUsed ? '발행일' : '지급일'}:
+							{formatDate(couponSet.createdAt, 'ymd')}
+						</div>
 					</td>
 				</tr>
 			{/each}
@@ -204,13 +213,11 @@
 
 	.date {
 		text-align: center;
-	}
-
-	.issued-coupons {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 5px;
-		margin-top: 10px;
+		background-color: #eee;
+		color: #000;
+		padding: 5px 10px;
+		margin: 10px auto 0;
+		width: 180px;
+		border-radius: 5px;
 	}
 </style>

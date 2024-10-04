@@ -94,7 +94,7 @@
 									<button on:click={incrementCount}><span class="material-icons">add</span></button>
 								</div>
 								<button on:click={() => confirmCoupon(userId)} class="success">쿠폰갯수지급</button>
-								<button on:click={() => (selectedUserId = null)}>닫기</button>
+								<button on:click={() => (selectedUserId = null)} class="close">닫기</button>
 							</div>
 						</td>
 					</tr>
@@ -142,5 +142,8 @@
 	.success {
 		background-color: var(--primary-color);
 		color: white;
+	}
+	.close {
+		margin-left: auto;
 	}
 </style>
